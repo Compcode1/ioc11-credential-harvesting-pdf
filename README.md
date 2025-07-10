@@ -1,48 +1,106 @@
-IOC 11 – Malicious PDF Redirect via Embedded Link
+🧾 IOC 11 – Credential Harvesting via Embedded PDF Redirect
+Goal: Analyze a fileless phishing attack triggered by a user opening a deceptive PDF. The attack chain involved browser redirection to a typosquatted Microsoft login page without dropping malware. This case emphasizes detection through behavior analysis, EDR process chains, and network telemetry.
 
-Overview
-This case study examines an obfuscated phishing attempt embedded in a PDF file. The attack relied on user interaction to initiate a hidden redirect to a typosquatted phishing domain. No malware was dropped, no process was overtly malicious, and the PDF appeared benign—until it triggered a covert network egress through a legitimate application (Adobe Reader). The attacker’s goal was credential harvesting via social engineering and DNS evasion.
+🎯 Project Objective
+Investigate a fileless credential harvesting attempt embedded within a legitimate-looking PDF.
 
-Key IOC Highlights
-Source of IOC: EDR (Endpoint Detection and Response) alert on suspicious PDF→browser behavior chain
+Validate cross-layer telemetry from EDR, DNS logs, and host process chains.
 
-Triage Type: Social Engineering / Obfuscated Link
+Map detection opportunities to Cybersecurity Battlefield telemetry layers.
 
-Process Chain: AcroRd32.exe (Adobe Reader) → msedge.exe (Microsoft Edge)
+🧪 Attack Simulation Summary
+A malicious PDF contains an invisible hyperlink pointing to a shortened redirect URL.
 
-Indicator Artifacts: DNS query to typosquatted domain, hyperlink embedded in PDF metadata
+Upon user click, Adobe Reader (AcroRd32.exe) spawns Microsoft Edge (msedge.exe) to open the link.
 
-Cross-Layer Activity: Involved OS Layer 1 (process), Layer 6 (network egress), and Layer 5 (EDR log activity)
+The browser performs a DNS lookup to trackupdate[.]info, which redirects to micros0ft-verify[.]com (a typosquatted phishing site).
 
-Attacker Tactics
-Fileless delivery via trusted application
+The phishing site mimics a Microsoft login and collects user credentials.
 
-User-triggered execution
+No files were dropped; all activity occurred through legitimate processes.
 
-Exploitation of weak DNS filtering
+🧱 Battlefield Framework Mapping
+Host Layer Alignment:
 
-Redirect chaining to mask destination
+Layer 1 – Process Execution
 
-Deceptive social engineering embedded in legitimate document
+AcroRd32.exe launches msedge.exe
 
-Defender Response
-PDF isolated and sandboxed for analysis
+Triggered from user interaction via Adobe Reader
 
-Embedded URL decoded and linked to malicious infrastructure
+Layer 5 – Event Monitoring
 
-DNS logs used to confirm outbound attempt
+EDR correlation flagged the unusual PDF → browser chain
 
-EDR detection rule updated to flag similar behavior chains
+Behavioral telemetry used to detect process flow anomalies
 
-User notified and workstation segmented from broader network
+Layer 6 – Network Communication
 
-Educational Value
-This IOC emphasizes the subtlety of real-world phishing techniques that do not rely on payloads, but on user behavior and overlooked telemetry paths (e.g., DNS, PDF metadata, and browser spawning). It demonstrates the necessity of:
+DNS request to redirect domain
 
-DNS content filtering
+HTTP POST to phishing site captured in DNS/network logs
 
-Behavioral correlation rules
+OSI Model Alignment:
 
-Endpoint telemetry interpretation
+Layer 7 – Application: PDF file and browser activity
 
-Deep cross-layer investigative practices
+Layer 4 – Transport: TCP-based HTTP POST
+
+Layer 3 – Network: IP traffic routing to phishing domain
+
+🔍 Detection Details (Telemetry Sources)
+EDR Alert Triggered
+
+Abnormal process chain: AcroRd32.exe → msedge.exe
+
+DNS Logs
+
+Resolution of trackupdate[.]info and micros0ft-verify[.]com
+
+PDF Metadata Analysis
+
+Embedded hyperlink located in a hidden text layer
+
+No malware detected
+
+Entire execution path remained fileless and relied on trusted tools
+
+🚩 Tactics and Techniques
+Phishing (Social Engineering)
+
+Relied on user trust in PDF documents
+
+Used visual familiarity and typosquatting to deceive
+
+Redirect Obfuscation
+
+URL shortener and multi-hop redirection masked final destination
+
+Fileless Execution
+
+No payloads; attack leveraged legitimate apps to evade AV
+
+🧠 Lessons Learned
+Unexpected PDF → browser behavior should be triaged immediately.
+
+DNS filtering is critical for detecting and blocking typosquatted domains.
+
+Behavior-based rules (EDR) are effective against fileless attacks.
+
+Redirect chaining is a common technique for masking destination domains.
+
+User education alone is not sufficient — telemetry-based defenses are essential.
+
+🛠️ Tools and Data Sources
+Endpoint Detection and Response (EDR) platform
+
+DNS logs and firewall telemetry
+
+PDF analysis tools (metadata inspection)
+
+Browser process behavior tracking
+
+🧭 Enterprise Analogy
+This attack is like receiving an official-looking envelope from HR. It contains a form, but the link leads to a convincing fake login page. The system didn’t detect malware—because there wasn’t any. Instead, it had to detect that a trustworthy messenger took the user to the wrong building.
+
+
